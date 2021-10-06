@@ -1,0 +1,31 @@
+# Nautilus Wallet demo deployment
+
+services:
+  # Docs: https://github.com/nginx-proxy/nginx-proxy
+  nginx-proxy:
+    image: nginxproxy/nginx-proxy:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+      - /etc/tls:/etc/nginx/certs:ro
+
+  wallet-api-demo:
+    image: ghcr.io/registreerocks/sgx-wallet-hw:main
+    read_only: true
+    init: true
+    environment:
+      BIND_ADDR: "0.0.0.0:8080"
+      VIRTUAL_HOST: ntls-api.registree.io
+      CERT_NAME: ntls-api
+    devices:
+      - /dev/sgx/enclave
+      - /dev/sgx/provision
+    volumes:
+      - wallet-store-demo:/app/wallet_store
+    expose:
+      - "8080"
+
+volumes:
+  wallet-store-demo:
