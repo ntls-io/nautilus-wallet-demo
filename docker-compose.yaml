@@ -27,5 +27,48 @@ services:
     expose:
       - "8080"
 
+  asset-services-redis:
+    image: "redis:6-alpine"
+    expose:
+      - "6379"
+    # Enable persistence
+    command: "redis-server --save 60 1"
+    volumes:
+      - asset-services-redis-data:/data
+
+  asset-services-api:
+    depends_on:
+      - asset-services-redis
+    image: ghcr.io/registreerocks/asset-services-api:xrp-demo
+    read_only: true
+    init: true
+    environment:
+      BROKER_URL: "redis://asset-services-redis:6379"
+      BIND_ADDR: "0.0.0.0:8081"
+      RUST_LOG: "info"
+      # For nginx-proxy:
+      VIRTUAL_HOST: ntls-services.registree.io
+      # TODO(Pi): CERT_NAME: ntls-services
+      CERT_NAME: ntls-api
+    expose:
+      - "8081"
+
+  asset-services-worker:
+    depends_on:
+      - asset-services-redis
+    image: ghcr.io/registreerocks/asset-services-worker:xrp-demo
+    read_only: true
+    init: true
+    environment:
+      BROKER_URL: "redis://asset-services-redis:6379"
+      PREFLIGHT_CHECK_LEVEL: remote
+
+      ONFIDO_API_TOKEN:
+      TWILIO_ACCOUNT_SID:
+      TWILIO_AUTH_TOKEN:
+      TWILIO_VERIFY_SERVICE_SID:
+
+
 volumes:
   wallet-store-demo:
+  asset-services-redis-data:
