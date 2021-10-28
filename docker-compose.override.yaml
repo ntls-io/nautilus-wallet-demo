@@ -19,5 +19,23 @@ services:
     expose:
       - "8080"
 
+  wallet-api-asa:
+    image: ghcr.io/registreerocks/sgx-wallet-hw:web-client-algorand-asa-support
+    read_only: true
+    init: true
+    environment:
+      BIND_ADDR: "0.0.0.0:8080"
+      VIRTUAL_HOST: algo-api.registree.io
+      # TODO:
+      CERT_NAME: ntls-api
+    devices:
+      - /dev/sgx/enclave
+      - /dev/sgx/provision
+    volumes:
+      - wallet-store-asa:/app/wallet_store
+    expose:
+      - "8080"
+
 volumes:
   wallet-store-xrp:
+  wallet-store-asa:
