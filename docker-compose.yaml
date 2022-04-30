@@ -12,7 +12,7 @@ services:
       - /etc/tls:/etc/nginx/certs:ro
 
   wallet-api-demo:
-    image: ghcr.io/registreerocks/sgx-wallet-hw:main
+    image: ghcr.io/ntls-io/sgx-wallet-hw:main
     read_only: true
     init: true
     environment:
@@ -39,7 +39,7 @@ services:
   asset-services-api:
     depends_on:
       - asset-services-redis
-    image: ghcr.io/registreerocks/asset-services-api:xrp-demo
+    image: ghcr.io/ntls-io/asset-services-api:xrp-demo
     read_only: true
     init: true
     environment:
@@ -56,7 +56,7 @@ services:
   asset-services-worker:
     depends_on:
       - asset-services-redis
-    image: ghcr.io/registreerocks/asset-services-worker:xrp-demo
+    image: ghcr.io/ntls-io/asset-services-worker:xrp-demo
     read_only: true
     init: true
     environment:

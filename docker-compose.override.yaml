@@ -3,7 +3,7 @@
 services:
 
   wallet-api-xrp:
-    image: ghcr.io/registreerocks/sgx-wallet-hw:xrp-demo
+    image: ghcr.io/ntls-io/sgx-wallet-hw:xrp-demo
     read_only: true
     init: true
     environment:
@@ -20,7 +20,7 @@ services:
       - "8080"
 
   wallet-api-asa:
-    image: ghcr.io/registreerocks/sgx-wallet-hw:web-client-algorand-asa-support
+    image: ghcr.io/ntls-io/sgx-wallet-hw:web-client-algorand-asa-support
     read_only: true
     init: true
     environment:
