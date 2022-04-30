@@ -39,7 +39,7 @@ services:
   asset-services-api:
     depends_on:
       - asset-services-redis
-    image: ghcr.io/ntls-io/asset-services-api:xrp-demo
+    image: ghcr.io/ntls-io/asset-services-api:main
     read_only: true
     init: true
     environment:
@@ -56,7 +56,7 @@ services:
   asset-services-worker:
     depends_on:
       - asset-services-redis
-    image: ghcr.io/ntls-io/asset-services-worker:xrp-demo
+    image: ghcr.io/ntls-io/asset-services-worker:main
     read_only: true
     init: true
     environment:
