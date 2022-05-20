@@ -34,3 +34,23 @@ The Redis broker persists short-lived state (limited to Celery task queue messag
 The Celery worker uses environment variables for credentials and configuration: see the `asset-services` [docker-compose.yaml].
 
 [docker-compose.yaml]: https://github.com/ntls-io/nautilus-wallet/blob/main/asset-services/docker-compose.yaml
+
+### Setting up GitHub Actions & SSH for deployment
+
+In addition to the application configuration, the following three GitHub Actions environment values determine access to the deployment target:
+
+- `DOCKER_HOST`: The Docker target host, in the format `ssh://user@target-host`
+- `SSH_KEY`: The SSH private key to connect with
+- `SSH_KNOWN_HOSTS`: The target host's SSH public key
+
+A new SSH private key may be generated using a command like:
+
+```
+ssh-keygen -t ed25519 -f id-nautilus-wallet-demo -C 'nautilus-wallet-demo GitHub Actions' -N ''
+```
+
+The value of `SSH_KNOWN_HOSTS` may be obtained from:
+
+```shell
+ssh-keyscan -t ed25519 'target-host'
+```
