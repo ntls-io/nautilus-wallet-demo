@@ -124,7 +124,7 @@ services:
       BIND_ADDR: "0.0.0.0:8081"
       RUST_LOG: "info"
       # For nginx-proxy:
-      VIRTUAL_HOST: ntls-services.registree.io,wallet-demo-services.ntls.io
+      VIRTUAL_HOST: ntls-services.registree.io,wallet-staging-services.ntls.io
       # TODO(Pi): CERT_NAME: ntls-services
       CERT_NAME: ntls-api
     expose:
