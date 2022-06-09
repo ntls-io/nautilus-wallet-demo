@@ -50,7 +50,7 @@ services:
     networks:
       - wallet-staging
     volumes:
-      - wallet-store-demo:/app/wallet_store
+      - wallet-store-staging:/app/wallet_store
     expose:
       - "8080"
 
