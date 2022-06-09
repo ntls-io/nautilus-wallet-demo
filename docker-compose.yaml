@@ -24,7 +24,7 @@ services:
     init: true
     environment:
       BIND_ADDR: "0.0.0.0:8080"
-      VIRTUAL_HOST: wallet-demo-api.ntls.io
+      VIRTUAL_HOST: ntls-api.registree.io,wallet-demo-api.ntls.io
       CERT_NAME: ntls-api
     devices:
       - /dev/sgx/enclave
@@ -42,7 +42,7 @@ services:
     init: true
     environment:
       BIND_ADDR: "0.0.0.0:8080"
-      VIRTUAL_HOST: ntls-api.registree.io,wallet-staging-api.ntls.io
+      VIRTUAL_HOST: wallet-staging-api.ntls.io
       CERT_NAME: ntls-api
     devices:
       - /dev/sgx/enclave
@@ -87,7 +87,7 @@ services:
       BIND_ADDR: "0.0.0.0:8081"
       RUST_LOG: "info"
       # For nginx-proxy:
-      VIRTUAL_HOST: wallet-demo-services.ntls.io
+      VIRTUAL_HOST: ntls-services.registree.io,wallet-demo-services.ntls.io
       # TODO(Pi): CERT_NAME: ntls-services
       CERT_NAME: ntls-api
     expose:
@@ -124,7 +124,7 @@ services:
       BIND_ADDR: "0.0.0.0:8081"
       RUST_LOG: "info"
       # For nginx-proxy:
-      VIRTUAL_HOST: ntls-services.registree.io,wallet-staging-services.ntls.io
+      VIRTUAL_HOST: wallet-staging-services.ntls.io
       # TODO(Pi): CERT_NAME: ntls-services
       CERT_NAME: ntls-api
     expose:
