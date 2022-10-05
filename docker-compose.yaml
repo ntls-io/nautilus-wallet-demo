@@ -2,7 +2,6 @@
 
 networks:
   wallet-demo:
-  wallet-bhutan-demo:
   wallet-staging:
 
 services:
@@ -11,7 +10,6 @@ services:
     image: nginxproxy/nginx-proxy:alpine
     networks:
       - wallet-demo
-      - wallet-bhutan-demo
       - wallet-staging
     ports:
       - "80:80"
@@ -21,13 +19,12 @@ services:
       - /etc/tls:/etc/nginx/certs:ro
 
   wallet-demo-api:
+    extends:
+      file: common-services.yaml
+      service: wallet-api
     image: ghcr.io/ntls-io/sgx-wallet-hw:demo
-    read_only: true
-    init: true
     environment:
-      BIND_ADDR: "0.0.0.0:8080"
       VIRTUAL_HOST: ntls-api.registree.io,wallet-demo-api.ntls.io
-      CERT_NAME: ntls-api
     devices:
       - /dev/sgx/enclave
       - /dev/sgx/provision
@@ -35,193 +32,93 @@ services:
       - wallet-demo
     volumes:
       - wallet-store-demo:/app/wallet_store
-    expose:
-      - "8080"
-
-  wallet-bhutan-demo-api:
-    image: ghcr.io/ntls-io/sgx-wallet-hw:bhutan-demo
-    read_only: true
-    init: true
-    environment:
-      BIND_ADDR: "0.0.0.0:8080"
-      VIRTUAL_HOST: wallet-bhutan-api.ntls.io
-      CERT_NAME: ntls-api
-    devices:
-      - /dev/sgx/enclave
-      - /dev/sgx/provision
-    networks:
-      - wallet-bhutan-demo
-    volumes:
-      - wallet-store-bhutan-demo:/app/wallet_store
-    expose:
-      - "8080"
 
   wallet-staging-api:
+    extends:
+      file: common-services.yaml
+      service: wallet-api
     image: ghcr.io/ntls-io/sgx-wallet-hw:main
-    read_only: true
-    init: true
     environment:
-      BIND_ADDR: "0.0.0.0:8080"
       VIRTUAL_HOST: wallet-staging-api.ntls.io
-      CERT_NAME: ntls-api
-    devices:
-      - /dev/sgx/enclave
-      - /dev/sgx/provision
     networks:
       - wallet-staging
     volumes:
       - wallet-store-staging:/app/wallet_store
-    expose:
-      - "8080"
 
   asset-services-demo-redis:
-    image: "redis:6-alpine"
-    expose:
-      - "6379"
-    # Enable persistence
-    command: "redis-server --save 60 1"
+    extends:
+      file: common-services.yaml
+      service: assset-services-redis
     networks:
       - wallet-demo
     volumes:
       - asset-services-demo-redis-data:/data
 
-  asset-services-bhutan-demo-redis:
-    image: "redis:6-alpine"
-    expose:
-      - "6379"
-    # Enable persistence
-    command: "redis-server --save 60 1"
-    networks:
-      - wallet-bhutan-demo
-    volumes:
-      - asset-services-bhutan-demo-redis-data:/data
-
   asset-services-staging-redis:
-    image: "redis:6-alpine"
-    expose:
-      - "6379"
-    # Enable persistence
-    command: "redis-server --save 60 1"
+    extends:
+      file: common-services.yaml
+      service: assset-services-redis
     networks:
       - wallet-staging
     volumes:
       - asset-services-staging-redis-data:/data
 
   asset-services-demo-api:
+    extends:
+      file: common-services.yaml
+      service: assset-services-api
     depends_on:
       - asset-services-demo-redis
     image: ghcr.io/ntls-io/asset-services-api:demo
-    read_only: true
-    init: true
     environment:
       BROKER_URL: "redis://asset-services-demo-redis:6379"
-      BIND_ADDR: "0.0.0.0:8081"
-      RUST_LOG: "info"
       # For nginx-proxy:
       VIRTUAL_HOST: ntls-services.registree.io,wallet-demo-services.ntls.io
-      # TODO(Pi): CERT_NAME: ntls-services
-      CERT_NAME: ntls-api
-    expose:
-      - "8081"
     networks:
       - wallet-demo
 
   asset-services-demo-worker:
+    extends:
+      file: common-services.yaml
+      service: assset-services-worker
     depends_on:
       - asset-services-demo-redis
     image: ghcr.io/ntls-io/asset-services-worker:demo
-    read_only: true
-    init: true
     environment:
       BROKER_URL: "redis://asset-services-demo-redis:6379"
-      PREFLIGHT_CHECK_LEVEL: remote
-
-      ONFIDO_API_TOKEN:
-      TWILIO_ACCOUNT_SID:
-      TWILIO_AUTH_TOKEN:
-      TWILIO_VERIFY_SERVICE_SID:
-      TWILIO_MESSAGING_SERVICE_SID:
     networks:
       - wallet-demo
 
-  asset-services-bhutan-demo-api:
-    depends_on:
-      - asset-services-bhutan-demo-redis
-    image: ghcr.io/ntls-io/asset-services-api:bhutan-demo
-    read_only: true
-    init: true
-    environment:
-      BROKER_URL: "redis://asset-services-bhutan-demo-redis:6379"
-      BIND_ADDR: "0.0.0.0:8081"
-      RUST_LOG: "info"
-      # For nginx-proxy:
-      VIRTUAL_HOST: wallet-bhutan-services.ntls.io
-      # TODO(Pi): CERT_NAME: ntls-services
-      CERT_NAME: ntls-api
-    expose:
-      - "8081"
-    networks:
-      - wallet-bhutan-demo
-
-  asset-services-bhutan-demo-worker:
-    depends_on:
-      - asset-services-bhutan-demo-redis
-    image: ghcr.io/ntls-io/asset-services-worker:bhutan-demo
-    read_only: true
-    init: true
-    environment:
-      BROKER_URL: "redis://asset-services-bhutan-demo-redis:6379"
-      PREFLIGHT_CHECK_LEVEL: remote
-
-      ONFIDO_API_TOKEN:
-      TWILIO_ACCOUNT_SID:
-      TWILIO_AUTH_TOKEN:
-      TWILIO_VERIFY_SERVICE_SID:
-      TWILIO_MESSAGING_SERVICE_SID:
-    networks:
-      - wallet-bhutan-demo
-
   asset-services-staging-api:
+    extends:
+      file: common-services.yaml
+      service: assset-services-api
     depends_on:
       - asset-services-staging-redis
     image: ghcr.io/ntls-io/asset-services-api:main
-    read_only: true
-    init: true
     environment:
       BROKER_URL: "redis://asset-services-staging-redis:6379"
-      BIND_ADDR: "0.0.0.0:8081"
-      RUST_LOG: "info"
       # For nginx-proxy:
       VIRTUAL_HOST: wallet-staging-services.ntls.io
       # TODO(Pi): CERT_NAME: ntls-services
       CERT_NAME: ntls-api
-    expose:
-      - "8081"
     networks:
       - wallet-staging
 
   asset-services-staging-worker:
+    extends:
+      file: common-services.yaml
+      service: assset-services-worker
     depends_on:
       - asset-services-staging-redis
     image: ghcr.io/ntls-io/asset-services-worker:main
-    read_only: true
-    init: true
     environment:
       BROKER_URL: "redis://asset-services-staging-redis:6379"
-      PREFLIGHT_CHECK_LEVEL: remote
-
-      ONFIDO_API_TOKEN:
-      TWILIO_ACCOUNT_SID:
-      TWILIO_AUTH_TOKEN:
-      TWILIO_VERIFY_SERVICE_SID:
-      TWILIO_MESSAGING_SERVICE_SID:
     networks:
       - wallet-staging
 
 volumes:
   wallet-store-demo:
-  wallet-store-bhutan-demo:
   wallet-store-staging:
   asset-services-demo-redis-data:
-  asset-services-bhutan-demo-redis-data:
   asset-services-staging-redis-data:
