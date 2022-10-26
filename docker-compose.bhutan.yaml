@@ -1,0 +1,147 @@
+networks:
+  wallet-bhutan-demo:
+  wallet-bhutan-staging:
+
+services:
+  nginx-proxy:
+    networks:
+      - wallet-bhutan-demo
+      - wallet-bhutan-staging
+
+  wallet-bhutan-staging-api:
+    image: ghcr.io/ntls-io/sgx-wallet-hw:main
+    environment:
+      BIND_ADDR: "0.0.0.0:8080"
+      CERT_NAME: ntls-api
+      VIRTUAL_HOST: wallet-bhutan-staging-api.ntls.io
+    networks:
+      - wallet-bhutan-staging
+    volumes:
+      - wallet-store-bhutan-staging:/app/wallet_store
+    read_only: true
+    init: true
+    devices:
+      - /dev/sgx/enclave
+      - /dev/sgx/provision
+    expose:
+      - "8080"
+
+  asset-services-bhutan-staging-redis:
+    networks:
+      - wallet-bhutan-staging
+    volumes:
+      - asset-services-bhutan-staging-redis-data:/data
+    image: "redis:6-alpine"
+    expose:
+      - "6379"
+    # Enable persistence
+    command: "redis-server --save 60 1"
+
+  asset-services-bhutan-staging-api:
+    depends_on:
+      - asset-services-bhutan-staging-redis
+    image: ghcr.io/ntls-io/asset-services-api:main
+    environment:
+      BROKER_URL: "redis://asset-services-bhutan-staging-redis:6379"
+      # For nginx-proxy:
+      VIRTUAL_HOST: wallet-bhutan-staging-services.ntls.io
+      BIND_ADDR: "0.0.0.0:8081"
+      RUST_LOG: "info"
+      # TODO(Pi): CERT_NAME: ntls-services
+      CERT_NAME: ntls-api
+    networks:
+      - wallet-bhutan-staging
+    read_only: true
+    init: true
+    expose:
+      - "8081"
+
+  asset-services-bhutan-staging-worker:
+    depends_on:
+      - asset-services-bhutan-staging-redis
+    image: ghcr.io/ntls-io/asset-services-worker:main
+    environment:
+      BROKER_URL: "redis://asset-services-bhutan-staging-redis:6379"
+      PREFLIGHT_CHECK_LEVEL: remote
+
+      ONFIDO_API_TOKEN:
+      TWILIO_ACCOUNT_SID:
+      TWILIO_AUTH_TOKEN:
+      TWILIO_VERIFY_SERVICE_SID:
+      TWILIO_MESSAGING_SERVICE_SID:
+    networks:
+      - wallet-bhutan-staging
+    read_only: true
+    init: true
+
+  wallet-bhutan-demo-api:
+    image: ghcr.io/ntls-io/sgx-wallet-hw:demo
+    environment:
+      BIND_ADDR: "0.0.0.0:8080"
+      CERT_NAME: ntls-api
+      VIRTUAL_HOST: wallet-bhutan-api.ntls.io
+    networks:
+      - wallet-bhutan-demo
+    volumes:
+      - wallet-store-bhutan-demo:/app/wallet_store
+    read_only: true
+    init: true
+    devices:
+      - /dev/sgx/enclave
+      - /dev/sgx/provision
+    expose:
+      - "8080"
+
+  asset-services-bhutan-demo-redis:
+    networks:
+      - wallet-bhutan-demo
+    volumes:
+      - asset-services-bhutan-demo-redis-data:/data
+    image: "redis:6-alpine"
+    expose:
+      - "6379"
+    # Enable persistence
+    command: "redis-server --save 60 1"
+
+  asset-services-bhutan-demo-api:
+    depends_on:
+      - asset-services-bhutan-demo-redis
+    image: ghcr.io/ntls-io/asset-services-api:demo
+    environment:
+      BROKER_URL: "redis://asset-services-bhutan-demo-redis:6379"
+      # For nginx-proxy:
+      VIRTUAL_HOST: wallet-bhutan-services.ntls.io
+      BIND_ADDR: "0.0.0.0:8081"
+      RUST_LOG: "info"
+      # TODO(Pi): CERT_NAME: ntls-services
+      CERT_NAME: ntls-api
+    networks:
+      - wallet-bhutan-demo
+    read_only: true
+    init: true
+    expose:
+      - "8081"
+
+  asset-services-bhutan-demo-worker:
+    depends_on:
+      - asset-services-bhutan-demo-redis
+    image: ghcr.io/ntls-io/asset-services-worker:demo
+    environment:
+      BROKER_URL: "redis://asset-services-bhutan-demo-redis:6379"
+      PREFLIGHT_CHECK_LEVEL: remote
+
+      ONFIDO_API_TOKEN:
+      TWILIO_ACCOUNT_SID:
+      TWILIO_AUTH_TOKEN:
+      TWILIO_VERIFY_SERVICE_SID:
+      TWILIO_MESSAGING_SERVICE_SID:
+    networks:
+      - wallet-bhutan-demo
+    read_only: true
+    init: true
+
+volumes:
+  wallet-store-bhutan-demo:
+  asset-services-bhutan-demo-redis-data:
+  wallet-store-bhutan-staging:
+  asset-services-bhutan-staging-redis-data:

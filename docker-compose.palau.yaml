@@ -1,0 +1,147 @@
+networks:
+  wallet-palau-demo:
+  wallet-palau-staging:
+
+services:
+  nginx-proxy:
+    networks:
+      - wallet-palau-demo
+      - wallet-palau-staging
+
+  wallet-palau-staging-api:
+    image: ghcr.io/ntls-io/sgx-wallet-hw:main
+    environment:
+      BIND_ADDR: "0.0.0.0:8080"
+      CERT_NAME: ntls-api
+      VIRTUAL_HOST: wallet-palau-staging-api.ntls.io
+    networks:
+      - wallet-palau-staging
+    volumes:
+      - wallet-store-palau-staging:/app/wallet_store
+    read_only: true
+    init: true
+    devices:
+      - /dev/sgx/enclave
+      - /dev/sgx/provision
+    expose:
+      - "8080"
+
+  asset-services-palau-staging-redis:
+    networks:
+      - wallet-palau-staging
+    volumes:
+      - asset-services-palau-staging-redis-data:/data
+    image: "redis:6-alpine"
+    expose:
+      - "6379"
+    # Enable persistence
+    command: "redis-server --save 60 1"
+
+  asset-services-palau-staging-api:
+    depends_on:
+      - asset-services-palau-staging-redis
+    image: ghcr.io/ntls-io/asset-services-api:main
+    environment:
+      BROKER_URL: "redis://asset-services-palau-staging-redis:6379"
+      # For nginx-proxy:
+      VIRTUAL_HOST: wallet-palau-staging-services.ntls.io
+      BIND_ADDR: "0.0.0.0:8081"
+      RUST_LOG: "info"
+      # TODO(Pi): CERT_NAME: ntls-services
+      CERT_NAME: ntls-api
+    networks:
+      - wallet-palau-staging
+    read_only: true
+    init: true
+    expose:
+      - "8081"
+
+  asset-services-palau-staging-worker:
+    depends_on:
+      - asset-services-palau-staging-redis
+    image: ghcr.io/ntls-io/asset-services-worker:main
+    environment:
+      BROKER_URL: "redis://asset-services-palau-staging-redis:6379"
+      PREFLIGHT_CHECK_LEVEL: remote
+
+      ONFIDO_API_TOKEN:
+      TWILIO_ACCOUNT_SID:
+      TWILIO_AUTH_TOKEN:
+      TWILIO_VERIFY_SERVICE_SID:
+      TWILIO_MESSAGING_SERVICE_SID:
+    networks:
+      - wallet-palau-staging
+    read_only: true
+    init: true
+
+  wallet-palau-demo-api:
+    image: ghcr.io/ntls-io/sgx-wallet-hw:demo
+    environment:
+      BIND_ADDR: "0.0.0.0:8080"
+      CERT_NAME: ntls-api
+      VIRTUAL_HOST: wallet-palau-api.ntls.io
+    networks:
+      - wallet-palau-demo
+    volumes:
+      - wallet-store-palau-demo:/app/wallet_store
+    read_only: true
+    init: true
+    devices:
+      - /dev/sgx/enclave
+      - /dev/sgx/provision
+    expose:
+      - "8080"
+
+  asset-services-palau-demo-redis:
+    networks:
+      - wallet-palau-demo
+    volumes:
+      - asset-services-palau-demo-redis-data:/data
+    image: "redis:6-alpine"
+    expose:
+      - "6379"
+    # Enable persistence
+    command: "redis-server --save 60 1"
+
+  asset-services-palau-demo-api:
+    depends_on:
+      - asset-services-palau-demo-redis
+    image: ghcr.io/ntls-io/asset-services-api:demo
+    environment:
+      BROKER_URL: "redis://asset-services-palau-demo-redis:6379"
+      # For nginx-proxy:
+      VIRTUAL_HOST: wallet-palau-services.ntls.io
+      BIND_ADDR: "0.0.0.0:8081"
+      RUST_LOG: "info"
+      # TODO(Pi): CERT_NAME: ntls-services
+      CERT_NAME: ntls-api
+    networks:
+      - wallet-palau-demo
+    read_only: true
+    init: true
+    expose:
+      - "8081"
+
+  asset-services-palau-demo-worker:
+    depends_on:
+      - asset-services-palau-demo-redis
+    image: ghcr.io/ntls-io/asset-services-worker:demo
+    environment:
+      BROKER_URL: "redis://asset-services-palau-demo-redis:6379"
+      PREFLIGHT_CHECK_LEVEL: remote
+
+      ONFIDO_API_TOKEN:
+      TWILIO_ACCOUNT_SID:
+      TWILIO_AUTH_TOKEN:
+      TWILIO_VERIFY_SERVICE_SID:
+      TWILIO_MESSAGING_SERVICE_SID:
+    networks:
+      - wallet-palau-demo
+    read_only: true
+    init: true
+
+volumes:
+  wallet-store-palau-demo:
+  asset-services-palau-demo-redis-data:
+  wallet-store-palau-staging:
+  asset-services-palau-staging-redis-data:
