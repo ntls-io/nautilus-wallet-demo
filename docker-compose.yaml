@@ -140,7 +140,7 @@ services:
       - asset-services-demo-redis
     image: ghcr.io/ntls-io/asset-services-worker:demo
     environment:
-      BROKER_URL: "redis://asset-services-staging-redis:6379"
+      BROKER_URL: "redis://asset-services-demo-redis:6379"
       PREFLIGHT_CHECK_LEVEL: remote
 
       ONFIDO_API_TOKEN:
