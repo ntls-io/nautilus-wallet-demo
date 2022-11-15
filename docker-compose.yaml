@@ -95,7 +95,7 @@ services:
     expose:
       - "8081"
 
-  asset-services-staging-worker: &asset-services-worker-default
+  asset-services-staging-worker:
     depends_on:
       - asset-services-staging-redis
     image: ghcr.io/ntls-io/asset-services-worker:main
@@ -136,7 +136,6 @@ services:
       - "8081"
 
   asset-services-demo-worker:
-    <<: *asset-services-worker-default
     depends_on:
       - asset-services-demo-redis
     image: ghcr.io/ntls-io/asset-services-worker:demo
