@@ -36,40 +36,11 @@ services:
     expose:
       - "8080"
 
-  wallet-demo-api:
-    image: ghcr.io/ntls-io/sgx-wallet-hw:demo
-    environment:
-      VIRTUAL_HOST: ntls-api.registree.io,wallet-demo-api.ntls.io
-      BIND_ADDR: "0.0.0.0:8080"
-      CERT_NAME: ntls-api
-    devices:
-      - /dev/sgx/enclave
-      - /dev/sgx/provision
-    read_only: true
-    init: true
-    networks:
-      - wallet-demo
-    volumes:
-      - wallet-store-demo:/app/wallet_store
-    expose:
-      - "8080"
-
   asset-services-staging-redis:
     networks:
       - wallet-staging
     volumes:
       - asset-services-staging-redis-data:/data
-    image: "redis:6-alpine"
-    expose:
-      - "6379"
-    # Enable persistence
-    command: "redis-server --save 60 1"
-
-  asset-services-demo-redis:
-    networks:
-      - wallet-demo
-    volumes:
-      - asset-services-demo-redis-data:/data
     image: "redis:6-alpine"
     expose:
       - "6379"
@@ -115,6 +86,35 @@ services:
       - wallet-staging
     read_only: true
     init: true
+
+  wallet-demo-api:
+    image: ghcr.io/ntls-io/sgx-wallet-hw:demo
+    environment:
+      VIRTUAL_HOST: ntls-api.registree.io,wallet-demo-api.ntls.io
+      BIND_ADDR: "0.0.0.0:8080"
+      CERT_NAME: ntls-api
+    devices:
+      - /dev/sgx/enclave
+      - /dev/sgx/provision
+    read_only: true
+    init: true
+    networks:
+      - wallet-demo
+    volumes:
+      - wallet-store-demo:/app/wallet_store
+    expose:
+      - "8080"
+
+  asset-services-demo-redis:
+    networks:
+      - wallet-demo
+    volumes:
+      - asset-services-demo-redis-data:/data
+    image: "redis:6-alpine"
+    expose:
+      - "6379"
+    # Enable persistence
+    command: "redis-server --save 60 1"
 
   asset-services-demo-api:
     depends_on:
