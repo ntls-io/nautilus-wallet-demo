@@ -22,6 +22,7 @@ services:
     image: ghcr.io/ntls-io/sgx-wallet-hw:main
     environment:
       VIRTUAL_HOST: wallet-staging-api.ntls.io
+      VIRTUAL_PATH: ~^/(enclave-report|wallet-operation)
       BIND_ADDR: "0.0.0.0:8080"
       CERT_NAME: ntls-api
     networks:
@@ -35,6 +36,24 @@ services:
       - /dev/sgx/provision
     expose:
       - "8080"
+
+  wallet-staging-backend-services:
+    image: ghcr.io/ntls-io/backend-services:main
+    environment:
+      VIRTUAL_HOST: wallet-staging-api.ntls.io
+      VIRTUAL_PATH: /
+      BIND_ADDR: "0.0.0.0:8000"
+      CERT_NAME: ntls-api
+
+      PRIMARY_ORIGIN: "https://staging.ntls.io"
+      STAGING_MODE: 1
+      WALLET_DB_CONNECTION_STRING: ${NTLS_STAGING_WALLET_ADDRESS_DB_CONNECTION_STRING}
+      WALLET_DB_NAME: ${NTLS_STAGING_WALLET_ADDRESS_DB_DATABASE_NAME}
+    networks:
+      - wallet-staging
+    init: true
+    expose:
+      - "8000"
 
   asset-services-staging-redis:
     networks:
@@ -91,6 +110,7 @@ services:
     image: ghcr.io/ntls-io/sgx-wallet-hw:demo
     environment:
       VIRTUAL_HOST: ntls-api.registree.io,wallet-demo-api.ntls.io
+      VIRTUAL_PATH: ~^/(enclave-report|wallet-operation)
       BIND_ADDR: "0.0.0.0:8080"
       CERT_NAME: ntls-api
     devices:

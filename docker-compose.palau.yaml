@@ -14,6 +14,7 @@ services:
       BIND_ADDR: "0.0.0.0:8080"
       CERT_NAME: ntls-api
       VIRTUAL_HOST: wallet-palau-staging-api.ntls.io
+      VIRTUAL_PATH: ~^/(enclave-report|wallet-operation)
     networks:
       - wallet-palau-staging
     volumes:
@@ -83,6 +84,7 @@ services:
       BIND_ADDR: "0.0.0.0:8080"
       CERT_NAME: ntls-api
       VIRTUAL_HOST: wallet-palau-api.ntls.io
+      VIRTUAL_PATH: ~^/(enclave-report|wallet-operation)
     networks:
       - wallet-palau-demo
     volumes:
