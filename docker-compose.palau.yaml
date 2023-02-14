@@ -14,6 +14,7 @@ services:
       BIND_ADDR: "0.0.0.0:8080"
       CERT_NAME: ntls-api
       VIRTUAL_HOST: wallet-palau-staging-api.ntls.io
+      VIRTUAL_PATH: ~^/(enclave-report|wallet-operation)
     networks:
       - wallet-palau-staging
     volumes:
@@ -25,6 +26,24 @@ services:
       - /dev/sgx/provision
     expose:
       - "8080"
+
+  wallet-palau-staging-backend-services:
+    image: ghcr.io/ntls-io/backend-services:main
+    environment:
+      VIRTUAL_HOST: wallet-palau-staging-api.ntls.io
+      VIRTUAL_PATH: /
+      BIND_ADDR: "0.0.0.0:8000"
+      CERT_NAME: ntls-api
+
+      PRIMARY_ORIGIN: "https://palau-staging.ntls.io"
+      STAGING_MODE: 0
+      WALLET_DB_CONNECTION_STRING: ${PALAU_STAGING_WALLET_ADDRESS_DB_CONNECTION_STRING}
+      WALLET_DB_NAME: ${PALAU_STAGING_DATABASE_NAME}
+    networks:
+      - wallet-palau-staging
+    init: true
+    expose:
+      - "8000"
 
   asset-services-palau-staging-redis:
     networks:
@@ -83,6 +102,7 @@ services:
       BIND_ADDR: "0.0.0.0:8080"
       CERT_NAME: ntls-api
       VIRTUAL_HOST: wallet-palau-api.ntls.io
+      VIRTUAL_PATH: ~^/(enclave-report|wallet-operation)
     networks:
       - wallet-palau-demo
     volumes:
@@ -94,6 +114,25 @@ services:
       - /dev/sgx/provision
     expose:
       - "8080"
+
+  wallet-palau-demo-backend-services:
+    image: ghcr.io/ntls-io/backend-services:demo
+    environment:
+      VIRTUAL_HOST: wallet-palau-demo-api.ntls.io
+      VIRTUAL_PATH: /
+      BIND_ADDR: "0.0.0.0:8000"
+      CERT_NAME: ntls-api
+
+      PRIMARY_ORIGIN: "https://palau.ntls.io"
+      STAGING_MODE: 0
+      WALLET_DB_CONNECTION_STRING: ${PALAU_PROD_WALLET_ADDRESS_DB_CONNECTION_STRING}
+      WALLET_DB_NAME: ${PALAU_PROD_DATABASE_NAME}
+    networks:
+      - wallet-palau-demo
+    init: true
+    expose:
+      - "8000"
+
 
   asset-services-palau-demo-redis:
     networks:

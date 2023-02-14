@@ -110,6 +110,7 @@ services:
     image: ghcr.io/ntls-io/sgx-wallet-hw:demo
     environment:
       VIRTUAL_HOST: ntls-api.registree.io,wallet-demo-api.ntls.io
+      VIRTUAL_PATH: ~^/(enclave-report|wallet-operation)
       BIND_ADDR: "0.0.0.0:8080"
       CERT_NAME: ntls-api
     devices:
