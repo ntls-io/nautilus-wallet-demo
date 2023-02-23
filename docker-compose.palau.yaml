@@ -39,6 +39,12 @@ services:
       STAGING_MODE: 0
       WALLET_DB_CONNECTION_STRING: ${PALAU_STAGING_WALLET_ADDRESS_DB_CONNECTION_STRING}
       WALLET_DB_NAME: ${PALAU_STAGING_DATABASE_NAME}
+
+      AUTOFUND_ACCOUNT: ${PALAU_STAGING_AUTOFUND_ACCOUNT}
+      AUTOFUND_KEY: ${PALAU_STAGING_AUTOFUND_KEY}
+      AUTOFUND_SERVER: ${PALAU_STAGING_AUTOFUND_SERVER}
+      AUTOFUND_SEQUENCE: ${PALAU_STAGING_AUTOFUND_SEQUENCE}
+      AUTOFUND_AMOUNT: ${PALAU_STAGING_AUTOFUND_AMOUNT}
     networks:
       - wallet-palau-staging
     init: true
@@ -118,7 +124,7 @@ services:
   wallet-palau-demo-backend-services:
     image: ghcr.io/ntls-io/backend-services:demo
     environment:
-      VIRTUAL_HOST: wallet-palau-demo-api.ntls.io
+      VIRTUAL_HOST: wallet-palau-api.ntls.io
       VIRTUAL_PATH: /
       BIND_ADDR: "0.0.0.0:8000"
       CERT_NAME: ntls-api
@@ -127,6 +133,12 @@ services:
       STAGING_MODE: 0
       WALLET_DB_CONNECTION_STRING: ${PALAU_PROD_WALLET_ADDRESS_DB_CONNECTION_STRING}
       WALLET_DB_NAME: ${PALAU_PROD_DATABASE_NAME}
+
+      AUTOFUND_ACCOUNT: ${PALAU_PROD_AUTOFUND_ACCOUNT}
+      AUTOFUND_KEY: ${PALAU_PROD_AUTOFUND_KEY}
+      AUTOFUND_SERVER: ${PALAU_PROD_AUTOFUND_SERVER}
+      AUTOFUND_SEQUENCE: ${PALAU_PROD_AUTOFUND_SEQUENCE}
+      AUTOFUND_AMOUNT: ${PALAU_PROD_AUTOFUND_AMOUNT}
     networks:
       - wallet-palau-demo
     init: true
