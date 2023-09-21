@@ -14,6 +14,7 @@ services:
       BIND_ADDR: "0.0.0.0:8080"
       CERT_NAME: ntls-api
       VIRTUAL_HOST: wallet-palau-staging-api.ntls.io
+      VIRTUAL_PATH: ~^/(enclave-report|wallet-operation)
     networks:
       - wallet-palau-staging
     volumes:
@@ -25,6 +26,34 @@ services:
       - /dev/sgx/provision
     expose:
       - "8080"
+
+  wallet-palau-staging-backend-services:
+    image: ghcr.io/ntls-io/backend-services:main
+    environment:
+      VIRTUAL_HOST: wallet-palau-staging-api.ntls.io
+      VIRTUAL_PATH: /
+      BIND_ADDR: "0.0.0.0:8000"
+      CERT_NAME: ntls-api
+
+      PRIMARY_ORIGIN: "https://palau-staging.ntls.io"
+      STAGING_MODE: 0
+      WALLET_DB_CONNECTION_STRING: ${PALAU_STAGING_WALLET_ADDRESS_DB_CONNECTION_STRING}
+      WALLET_DB_NAME: ${PALAU_STAGING_DATABASE_NAME}
+
+      AUTOFUND_ACCOUNT: ${PALAU_STAGING_AUTOFUND_ACCOUNT}
+      AUTOFUND_KEY: ${PALAU_STAGING_AUTOFUND_KEY}
+      AUTOFUND_SERVER: ${PALAU_STAGING_AUTOFUND_SERVER}
+      AUTOFUND_SEQUENCE: ${PALAU_STAGING_AUTOFUND_SEQUENCE}
+      AUTOFUND_AMOUNT: ${PALAU_STAGING_AUTOFUND_AMOUNT}
+
+      TWILIO_ACCOUNT_SID: ${PALAU_STAGING_TWILIO_ACCOUNT_SID}
+      TWILIO_AUTH_TOKEN: ${PALAU_STAGING_TWILIO_AUTH_TOKEN}
+      TWILIO_SERVICE_SID: ${PALAU_STAGING_TWILIO_SERVICE_SID}
+    networks:
+      - wallet-palau-staging
+    init: true
+    expose:
+      - "8000"
 
   asset-services-palau-staging-redis:
     networks:
@@ -83,6 +112,7 @@ services:
       BIND_ADDR: "0.0.0.0:8080"
       CERT_NAME: ntls-api
       VIRTUAL_HOST: wallet-palau-api.ntls.io
+      VIRTUAL_PATH: ~^/(enclave-report|wallet-operation)
     networks:
       - wallet-palau-demo
     volumes:
@@ -94,6 +124,35 @@ services:
       - /dev/sgx/provision
     expose:
       - "8080"
+
+  wallet-palau-demo-backend-services:
+    image: ghcr.io/ntls-io/backend-services:demo
+    environment:
+      VIRTUAL_HOST: wallet-palau-api.ntls.io
+      VIRTUAL_PATH: /
+      BIND_ADDR: "0.0.0.0:8000"
+      CERT_NAME: ntls-api
+
+      PRIMARY_ORIGIN: "https://palau.ntls.io"
+      STAGING_MODE: 0
+      WALLET_DB_CONNECTION_STRING: ${PALAU_PROD_WALLET_ADDRESS_DB_CONNECTION_STRING}
+      WALLET_DB_NAME: ${PALAU_PROD_DATABASE_NAME}
+
+      AUTOFUND_ACCOUNT: ${PALAU_PROD_AUTOFUND_ACCOUNT}
+      AUTOFUND_KEY: ${PALAU_PROD_AUTOFUND_KEY}
+      AUTOFUND_SERVER: ${PALAU_PROD_AUTOFUND_SERVER}
+      AUTOFUND_SEQUENCE: ${PALAU_PROD_AUTOFUND_SEQUENCE}
+      AUTOFUND_AMOUNT: ${PALAU_PROD_AUTOFUND_AMOUNT}
+
+      TWILIO_ACCOUNT_SID: ${PALAU_PROD_TWILIO_ACCOUNT_SID}
+      TWILIO_AUTH_TOKEN: ${PALAU_PROD_TWILIO_AUTH_TOKEN}
+      TWILIO_SERVICE_SID: ${PALAU_PROD_TWILIO_SERVICE_SID}
+    networks:
+      - wallet-palau-demo
+    init: true
+    expose:
+      - "8000"
+
 
   asset-services-palau-demo-redis:
     networks:

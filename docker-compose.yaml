@@ -22,6 +22,7 @@ services:
     image: ghcr.io/ntls-io/sgx-wallet-hw:main
     environment:
       VIRTUAL_HOST: wallet-staging-api.ntls.io
+      VIRTUAL_PATH: ~^/(enclave-report|wallet-operation)
       BIND_ADDR: "0.0.0.0:8080"
       CERT_NAME: ntls-api
     networks:
@@ -36,40 +37,39 @@ services:
     expose:
       - "8080"
 
-  wallet-demo-api:
-    image: ghcr.io/ntls-io/sgx-wallet-hw:demo
+  wallet-staging-backend-services:
+    image: ghcr.io/ntls-io/backend-services:main
     environment:
-      VIRTUAL_HOST: ntls-api.registree.io,wallet-demo-api.ntls.io
-      BIND_ADDR: "0.0.0.0:8080"
+      VIRTUAL_HOST: wallet-staging-api.ntls.io
+      VIRTUAL_PATH: /
+      BIND_ADDR: "0.0.0.0:8000"
       CERT_NAME: ntls-api
-    devices:
-      - /dev/sgx/enclave
-      - /dev/sgx/provision
-    read_only: true
-    init: true
+
+      PRIMARY_ORIGIN: "https://staging.ntls.io"
+      STAGING_MODE: 1
+      WALLET_DB_CONNECTION_STRING: ${NTLS_STAGING_WALLET_ADDRESS_DB_CONNECTION_STRING}
+      WALLET_DB_NAME: ${NTLS_STAGING_WALLET_ADDRESS_DB_DATABASE_NAME}
+
+      AUTOFUND_ACCOUNT: ${NTLS_STAGING_AUTOFUND_ACCOUNT}
+      AUTOFUND_KEY: ${NTLS_STAGING_AUTOFUND_KEY}
+      AUTOFUND_SERVER: ${NTLS_STAGING_AUTOFUND_SERVER}
+      AUTOFUND_SEQUENCE: ${NTLS_STAGING_AUTOFUND_SEQUENCE}
+      AUTOFUND_AMOUNT: ${NTLS_STAGING_AUTOFUND_AMOUNT}
+
+      TWILIO_ACCOUNT_SID: ${NTLS_STAGING_TWILIO_ACCOUNT_SID}
+      TWILIO_AUTH_TOKEN: ${NTLS_STAGING_TWILIO_AUTH_TOKEN}
+      TWILIO_SERVICE_SID: ${NTLS_STAGING_TWILIO_SERVICE_SID}
     networks:
-      - wallet-demo
-    volumes:
-      - wallet-store-demo:/app/wallet_store
+      - wallet-staging
+    init: true
     expose:
-      - "8080"
+      - "8000"
 
   asset-services-staging-redis:
     networks:
       - wallet-staging
     volumes:
       - asset-services-staging-redis-data:/data
-    image: "redis:6-alpine"
-    expose:
-      - "6379"
-    # Enable persistence
-    command: "redis-server --save 60 1"
-
-  asset-services-demo-redis:
-    networks:
-      - wallet-demo
-    volumes:
-      - asset-services-demo-redis-data:/data
     image: "redis:6-alpine"
     expose:
       - "6379"
@@ -115,6 +115,64 @@ services:
       - wallet-staging
     read_only: true
     init: true
+
+  wallet-demo-api:
+    image: ghcr.io/ntls-io/sgx-wallet-hw:demo
+    environment:
+      VIRTUAL_HOST: ntls-api.registree.io,wallet-demo-api.ntls.io
+      VIRTUAL_PATH: ~^/(enclave-report|wallet-operation)
+      BIND_ADDR: "0.0.0.0:8080"
+      CERT_NAME: ntls-api
+    devices:
+      - /dev/sgx/enclave
+      - /dev/sgx/provision
+    read_only: true
+    init: true
+    networks:
+      - wallet-demo
+    volumes:
+      - wallet-store-demo:/app/wallet_store
+    expose:
+      - "8080"
+
+  wallet-demo-backend-services:
+    image: ghcr.io/ntls-io/backend-services:demo
+    environment:
+      VIRTUAL_HOST: wallet-demo-api.ntls.io
+      VIRTUAL_PATH: /
+      BIND_ADDR: "0.0.0.0:8000"
+      CERT_NAME: ntls-api
+
+      PRIMARY_ORIGIN: "https://demo.ntls.io"
+      STAGING_MODE: 0
+      WALLET_DB_CONNECTION_STRING: ${NTLS_PROD_WALLET_ADDRESS_DB_CONNECTION_STRING}
+      WALLET_DB_NAME: ${NTLS_PROD_WALLET_ADDRESS_DB_DATABASE_NAME}
+
+      AUTOFUND_ACCOUNT: ${NTLS_PROD_AUTOFUND_ACCOUNT}
+      AUTOFUND_KEY: ${NTLS_PROD_AUTOFUND_KEY}
+      AUTOFUND_SERVER: ${NTLS_PROD_AUTOFUND_SERVER}
+      AUTOFUND_SEQUENCE: ${NTLS_PROD_AUTOFUND_SEQUENCE}
+      AUTOFUND_AMOUNT: ${NTLS_PROD_AUTOFUND_AMOUNT}
+
+      TWILIO_ACCOUNT_SID: ${NTLS_PROD_TWILIO_ACCOUNT_SID}
+      TWILIO_AUTH_TOKEN: ${NTLS_PROD_TWILIO_AUTH_TOKEN}
+      TWILIO_SERVICE_SID: ${NTLS_PROD_TWILIO_SERVICE_SID}
+    networks:
+      - wallet-staging
+    init: true
+    expose:
+      - "8000"
+
+  asset-services-demo-redis:
+    networks:
+      - wallet-demo
+    volumes:
+      - asset-services-demo-redis-data:/data
+    image: "redis:6-alpine"
+    expose:
+      - "6379"
+    # Enable persistence
+    command: "redis-server --save 60 1"
 
   asset-services-demo-api:
     depends_on:
